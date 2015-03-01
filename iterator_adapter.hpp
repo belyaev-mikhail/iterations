@@ -1,4 +1,5 @@
 #include <utility>
+#include <type_traits>
 #include <iterator>
 
 namespace essentials
@@ -61,8 +62,8 @@ struct forward_iterator_adapter {
         >
     >;
     using iterator_category = std::forward_iterator_tag;
-    using difference_type = void; // forward iterators do not need this shit
-        
+    using difference_type = size_t;
+
     friend bool operator==(forward_iterator_adapter lhv, forward_iterator_adapter rhv) {
         return lhv.derived.equals(rhv.derived);
     }
@@ -106,7 +107,7 @@ struct bidir_iterator_adapter {
         >
     >;
     using iterator_category = std::bidirectional_iterator_tag;
-    using difference_type = void; // bidir iterators do not need this shit
+    using difference_type = size_t;
         
     friend bool operator==(bidir_iterator_adapter lhv, bidir_iterator_adapter rhv) {
         return lhv.derived.equals(rhv.derived);
