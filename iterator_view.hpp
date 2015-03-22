@@ -131,6 +131,20 @@ struct iterator_view {
 
     /* terminating operations */
 
+    template<class F>
+    void foreach(F f) const {
+        for(auto&& e : *this) f(std::forward<decltype(e)>(e));
+    }
+
+    template<class F, class R>
+    R fold(R&& initial, F f) const {
+        R holder = std::forward<R>(initial);
+        for(auto&& e : *this) {
+            holder = f(std::forward<R>(holder), std::forward<decltype(e)>(e));
+        }
+        return std::forward<R>(holder);
+    }
+
     template<class Container>
     Container to() const {
         return Container{ begin_, end_ };
