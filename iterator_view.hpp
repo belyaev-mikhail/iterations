@@ -12,6 +12,7 @@
 #include <list>
 #include <set>
 #include <unordered_set>
+#include <algorithm>
 
 #include "map_iterator.hpp"
 #include "flatten_iterator.hpp"
@@ -143,6 +144,30 @@ struct iterator_view {
             holder = f(std::forward<R>(holder), std::forward<decltype(e)>(e));
         }
         return std::forward<R>(holder);
+    }
+
+    template<class Pred>
+    bool all_of(Pred p) const {
+        return std::all_of(begin_, end_, p);
+    }
+
+    template<class Pred>
+    bool any_of(Pred p) const {
+        return std::any_of(begin_, end_, p);
+    }
+
+    template<class Pred>
+    bool none_of(Pred p) const {
+        return std::none_of(begin_, end_, p);
+    }
+
+    bool empty() const {
+        return begin_ == end_;
+    }
+
+    template<class R>
+    auto first_or(R&& def) const {
+        return empty() ? std::forward<R>(def) : *begin_;
     }
 
     template<class Container>
