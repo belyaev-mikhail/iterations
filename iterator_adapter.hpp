@@ -54,7 +54,7 @@ struct forward_iterator_adapter {
     using value_type = impl_::invoke<std::remove_reference<reference>>;
     using pointer = impl_::invoke<
         std::conditional<
-            std::is_reference<reference>::value, 
+            std::is_lvalue_reference<reference>::value, 
             impl_::invoke<
                 std::add_pointer<reference>
             >, 
