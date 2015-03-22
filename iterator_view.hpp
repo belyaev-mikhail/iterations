@@ -17,6 +17,9 @@
 #include "flatten_iterator.hpp"
 #include "filter_iterator.hpp"
 #include "store_iterator.hpp"
+#include "zip_iterator.hpp"
+#include "sequence_iterator.hpp"
+#include "count_iterator.hpp"
 
 namespace essentials {
 namespace iterations {
@@ -59,6 +62,42 @@ struct iterator_view {
             flatten_iterator(end(), end()) 
         );
     }
+
+    template<class OtherView>
+    auto zipWith(OtherView&& other) const {
+        return create(
+            zip_iterator(begin(), overloaded_begin(std::forward<OtherView>(other))),
+            zip_iterator(end(), overloaded_end(std::forward<OtherView>(other)))
+        );
+    }
+
+    template<class OtherView, class Zipper>
+    auto zipWith(OtherView&& other, Zipper zipper) const {
+        return create(
+            zip_iterator(begin(), overloaded_begin(std::forward<OtherView>(other)), zipper),
+            zip_iterator(end(), overloaded_end(std::forward<OtherView>(other)), zipper)
+        );
+    }
+
+    template<class OtherView>
+    friend auto operator^(const iterator_view& self, OtherView&& other) {
+        return self.zipWith(std::forward<OtherView>(other));
+    }
+
+    template<class OtherView>
+    auto seq(OtherView&& other) const {
+        return create(
+            sequence_iterator(begin(), end(), overloaded_begin(std::forward<OtherView>(other))),
+            sequence_iterator(end(), end(), overloaded_end(std::forward<OtherView>(other)))
+        );
+    }
+
+    template<class OtherView>
+    friend auto operator>>(const iterator_view& self, OtherView&& other) {
+        return self.seq(std::forward<OtherView>(other));
+    }
+
+    /* terminating operations */
 
     template<class Container>
     Container to() const {
@@ -175,6 +214,11 @@ auto viewContainer(Container&& con) {
         overloaded_begin(std::forward<Container>(con)), 
         overloaded_end(std::forward<Container>(con))
     );
+}
+
+template<class ValueType = size_t>
+auto range(ValueType from, ValueType to) {
+    return view(count_iterator(from), count_iterator(to));
 }
 
 } /* namespace iterations */
