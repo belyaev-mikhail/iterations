@@ -304,13 +304,13 @@ struct simple_iterator_facade {
 #undef QUICK_RETURN
 
 template<class Con>
-auto overloaded_begin(const Con& con) {
+auto overloaded_begin(Con&& con) {
     using std::begin;
     return begin(con);
 }
 
 template<class Con>
-auto overloaded_end(const Con& con) {
+auto overloaded_end(Con&& con) {
     using std::end;
     return end(con);
 }
