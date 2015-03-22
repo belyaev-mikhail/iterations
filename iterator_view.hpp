@@ -180,6 +180,8 @@ struct iterator_view {
         return { begin_, end_ };
     }
 
+    /* semi-terminating operations */
+    
     template<class Container>
     auto toContainerView() const {
         auto sh = std::make_shared<Container>(begin_, end_);
