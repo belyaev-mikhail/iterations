@@ -73,7 +73,9 @@ auto zip_iterator(LIt lit, RIt rit, Zipper zipper) {
 template<class LIt, class RIt>
 auto zip_iterator(LIt lit, RIt rit) {
     return zip_iterator(lit, rit, [&](auto&& lhv, auto&& rhv){ 
-        return std::make_pair(zip_iterator_FWD(lhv), zip_iterator_FWD(rhv));
+        using LType = std::remove_rvalue_reference_t<decltype(lhv)>;
+        using RType = std::remove_rvalue_reference_t<decltype(rhv)>;
+        return std::pair<LType, RType>(std::forward<LType>(lhv), std::forward<RType>(rhv));
     });
 }
 
