@@ -68,18 +68,22 @@ auto zip_iterator(LIt lit, RIt rit, Zipper zipper) {
     );
 }
 
-#define zip_iterator_FWD(X) std::forward<decltype(X)>(X)
+namespace zip_iterator_impl {
+
+template<class T> struct remove_rvalue_reference{ using type = T; };
+template<class T> struct remove_rvalue_reference<T&&> { using type = T; };
+template<class T> using remove_rvalue_reference_t = typename remove_rvalue_reference<T>::type;
+
+}
 
 template<class LIt, class RIt>
 auto zip_iterator(LIt lit, RIt rit) {
     return zip_iterator(lit, rit, [&](auto&& lhv, auto&& rhv){ 
-        using LType = std::remove_rvalue_reference_t<decltype(lhv)>;
-        using RType = std::remove_rvalue_reference_t<decltype(rhv)>;
+        using LType = zip_iterator_impl::remove_rvalue_reference_t<decltype(lhv)>;
+        using RType = zip_iterator_impl::remove_rvalue_reference_t<decltype(rhv)>;
         return std::pair<LType, RType>(std::forward<LType>(lhv), std::forward<RType>(rhv));
     });
 }
-
-#undef zip_iterator_FWD
 
 } /* namespace iterations */
 } /* namespace essentials */
