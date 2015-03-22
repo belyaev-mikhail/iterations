@@ -1,3 +1,6 @@
+#ifndef ITERATOR_ADAPTER_HPP_
+#define ITERATOR_ADAPTER_HPP_
+
 #include <utility>
 #include <type_traits>
 #include <iterator>
@@ -273,4 +276,45 @@ random_access_iterator_adapter<SimpleIt> adapt_simple_iterator(SimpleIt it, std:
     return random_access_iterator_adapter<SimpleIt>{ it };
 }
 
+#define QUICK_RETURN(...) -> decltype(__VA_ARGS__){ return __VA_ARGS__; }
+
+template<class BaseIt>
+struct simple_iterator_facade {
+    BaseIt base;
+
+    simple_iterator_facade(const BaseIt& b): base(b) {}
+
+    auto value() QUICK_RETURN(*base);
+    auto value() const QUICK_RETURN(*base);
+    void next() { ++base; }
+    void next(size_t diff) { base += diff; }
+    void prev() { --base; }
+    void prev(size_t diff) { base -= diff; }
+    auto equals(const simple_iterator_facade& other) const QUICK_RETURN(base == other.base);
+    size_t distance(const simple_iterator_facade& other) const {
+        return base - other.base;
+    }
+    int compare(const simple_iterator_facade& other) const {
+        return (base < other.base) ? (-1) :
+               (base > other.base) ?   1 :
+                                       0;
+    }
+};
+
+#undef QUICK_RETURN
+
+template<class Con>
+auto overloaded_begin(const Con& con) {
+    using std::begin;
+    return begin(con);
+}
+
+template<class Con>
+auto overloaded_end(const Con& con) {
+    using std::end;
+    return end(con);
+}
+
 } /* namespace essentials */
+
+#endif /* ITERATOR_ADAPTER_HPP_ */
