@@ -20,9 +20,31 @@
 #include "zip_iterator.hpp"
 #include "sequence_iterator.hpp"
 #include "count_iterator.hpp"
+#include "itemize_iterator.hpp"
 
 namespace essentials {
 namespace iterations {
+
+namespace iterator_view_impl {
+    template<class It>
+    It next_with_limit(It it, It limit, size_t advance, std::random_access_iterator_tag) {
+        auto dist = std::distance(it, limit);
+        if(dist > advance) return limit;
+        else return std::next(it, advance);
+    }
+    template<class It, class Whatever>
+    It next_with_limit(It it, It limit, size_t advance, Whatever) {
+        for(size_t i = 0; i < advance; ++i) {
+            if(it == limit) break;
+            ++it;
+        }
+        return it;
+    }
+    template<class It>
+    It next_with_limit(It it, It limit, size_t advance) {
+        return next_with_limit(it, limit, advance, typename std::iterator_traits<It>::iterator_category{});
+    }
+}
 
 template<class It>
 struct iterator_view {
@@ -95,6 +117,16 @@ struct iterator_view {
     template<class OtherView>
     friend auto operator>>(const iterator_view& self, OtherView&& other) {
         return self.seq(std::forward<OtherView>(other));
+    }
+
+    iterator_view take(size_t howmany) const {
+        using namespace iterator_view_impl;
+        return { begin_, next_with_limit(begin_, end_, howmany) };
+    }
+
+    iterator_view drop(size_t howmany) const {
+        using namespace iterator_view_impl;
+        return { next_with_limit(begin_, end_, howmany), end_ };
     }
 
     /* terminating operations */
@@ -219,6 +251,12 @@ auto viewContainer(Container&& con) {
 template<class ValueType = size_t>
 auto range(ValueType from, ValueType to) {
     return view(count_iterator(from), count_iterator(to));
+}
+
+template<class ...Elements>
+auto itemize(Elements&&... elements) {
+    auto storage = std::make_shared<std::tuple<Elements...>>(std::forward<Elements>(elements)...);
+    return view(itemize_iterator(storage, 0), itemize_iterator(storage, sizeof...(Elements)));
 }
 
 } /* namespace iterations */
