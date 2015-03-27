@@ -40,6 +40,9 @@ auto filter_iterator(It it, It itEnd, Pred pred) {
     );
 }
 
+template<class It, class Pred>
+using filtered_iterator = forward_iterator_adapter<filtered_iterator_simple<It, Pred>>;
+
 } /* namespace iterations */
 } /* namespace essentials */
 
