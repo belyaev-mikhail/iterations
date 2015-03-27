@@ -62,6 +62,9 @@ auto flatten_iterator(It it, It itEnd) {
     );
 }
 
+template<class It>
+using flattened_iterator = forward_iterator_adapter<flattened_iterator_simple<It>>;
+
 } /* namespace iterations */
 } /* namespace essentials */
 

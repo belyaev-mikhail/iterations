@@ -23,14 +23,16 @@
 #include "count_iterator.hpp"
 #include "itemize_iterator.hpp"
 
+#define ITER_VIEW_QRET(...) ->decltype(__VA_ARGS__){ return __VA_ARGS__; }
+
 namespace essentials {
 namespace iterations {
 
 namespace iterator_view_impl {
     template<class It>
     It next_with_limit(It it, It limit, size_t advance, std::random_access_iterator_tag) {
-        auto dist = std::distance(it, limit);
-        if(dist > advance) return limit;
+        size_t dist = std::distance(it, limit);
+        if(dist < advance) return limit;
         else return std::next(it, advance);
     }
     template<class It, class Whatever>
@@ -67,58 +69,56 @@ struct iterator_view {
     }
 
     template<class Mapping>
-    auto map(Mapping m) const {
-        return create(map_iterator(begin(), m), map_iterator(end(), m));
-    }
+    auto map(Mapping m) const ITER_VIEW_QRET(
+        create(
+            essentials::iterations::map_iterator(begin_, m),
+            essentials::iterations::map_iterator(end_, m)
+        )
+    )
 
     template<class Pred>
-    auto filter(Pred p) const {
-        return create(
-            filter_iterator(begin(), end(), p), 
-            filter_iterator(end(), end(), p) 
-        );
+    auto filter(Pred p) const ITER_VIEW_QRET(
+        create(
+            filter_iterator(begin_, end_, p),
+            filter_iterator(end_, end_, p)
+        )
+    )
+
+    iterator_view<filtered_iterator<It, std::add_pointer_t<bool(reference)>>> filter() const {
+        std::add_pointer_t<bool(reference)> pred = [](reference v) -> bool { return !!v; };
+        return filter(pred);
     }
 
-    auto flatten() const {
-        return create( 
-            flatten_iterator(begin(), end()), 
-            flatten_iterator(end(), end()) 
+    iterator_view<flattened_iterator<It>> flatten() const {
+        return create(
+            flatten_iterator(begin_, end_),
+            flatten_iterator(end_, end_)
         );
     }
 
     template<class OtherView>
     auto zipWith(OtherView&& other) const {
         return create(
-            zip_iterator(begin(), overloaded_begin(std::forward<OtherView>(other))),
-            zip_iterator(end(), overloaded_end(std::forward<OtherView>(other)))
+            zip_iterator(begin_, overloaded_begin(std::forward<OtherView>(other))),
+            zip_iterator(end_, overloaded_end(std::forward<OtherView>(other)))
         );
     }
 
     template<class OtherView, class Zipper>
     auto zipWith(OtherView&& other, Zipper zipper) const {
         return create(
-            zip_iterator(begin(), overloaded_begin(std::forward<OtherView>(other)), zipper),
-            zip_iterator(end(), overloaded_end(std::forward<OtherView>(other)), zipper)
+            zip_iterator(begin_, overloaded_begin(std::forward<OtherView>(other)), zipper),
+            zip_iterator(end_, overloaded_end(std::forward<OtherView>(other)), zipper)
         );
     }
 
     template<class OtherView>
-    friend auto operator^(const iterator_view& self, OtherView&& other) {
-        return self.zipWith(std::forward<OtherView>(other));
-    }
-
-    template<class OtherView>
-    auto seq(OtherView&& other) const {
-        return create(
-            sequence_iterator(begin(), end(), overloaded_begin(std::forward<OtherView>(other))),
-            sequence_iterator(end(), end(), overloaded_end(std::forward<OtherView>(other)))
-        );
-    }
-
-    template<class OtherView>
-    friend auto operator>>(const iterator_view& self, OtherView&& other) {
-        return self.seq(std::forward<OtherView>(other));
-    }
+    auto seq(OtherView&& other) const ITER_VIEW_QRET(
+        create(
+            sequence_iterator(begin_, end_, overloaded_begin(std::forward<OtherView>(other))),
+            sequence_iterator(end_, end_, overloaded_end(std::forward<OtherView>(other)))
+        )
+    )
 
     iterator_view take(size_t howmany) const {
         using namespace iterator_view_impl;
@@ -137,13 +137,18 @@ struct iterator_view {
         for(auto&& e : *this) f(std::forward<decltype(e)>(e));
     }
 
-    template<class F, class R>
-    R fold(R&& initial, F f) const {
-        R holder = std::forward<R>(initial);
+    template<class R, class F>
+    R fold(const R& initial, F f) const {
+        R holder = initial;
         for(auto&& e : *this) {
-            holder = f(std::forward<R>(holder), std::forward<decltype(e)>(e));
+            holder = f(holder, std::forward<decltype(e)>(e));
         }
-        return std::forward<R>(holder);
+        return std::move(holder);
+    }
+
+    template<class F>
+    std::enable_if_t<std::is_copy_constructible<value_type>::value && std::is_copy_constructible<F>::value, value_type> reduce(F f) const {
+        return drop(1).fold(*begin_, f);
     }
 
     template<class Pred>
@@ -161,8 +166,24 @@ struct iterator_view {
         return std::none_of(begin_, end_, p);
     }
 
+    template<class Con>
+    bool starts_with(Con&& c) const {
+        auto cb = overloaded_begin(c);
+        auto ce = overloaded_end(c);
+        auto sb = begin_;
+        auto se = end_;
+        for(; cb != ce && sb != se; ++cb, ++sb) {
+            if(*sb != *cb) return false;
+        }
+        return true;
+    }
+
     bool empty() const {
         return begin_ == end_;
+    }
+
+    size_t size() const {
+        return std::distance(begin_, end_);
     }
 
     template<class R>
@@ -276,9 +297,25 @@ struct iterator_view {
 
 };
 
+template<class LIt, class RIt>
+auto operator^(const iterator_view<LIt>& self, const iterator_view<RIt>& other) {
+    return self.zipWith(other);
+}
+
+
+template<class LIt, class RIt>
+auto operator>>(const iterator_view<LIt>& self, const iterator_view<RIt>& other) {
+    return self.seq(other);
+}
+
 template<class It>
 iterator_view<It> view(It begin, It end) {
     return { begin, end };
+}
+
+template<class It>
+iterator_view<It> view(const std::pair<It, It>& pr) {
+    return { pr.first, pr.second };
 }
 
 template<class Container>
@@ -302,5 +339,7 @@ auto itemize(Elements&&... elements) {
 
 } /* namespace iterations */
 } /* namespace essentials */
+
+#undef ITER_VIEW_QRET
 
 #endif /* ITERATOR_VIEW_HPP_ */

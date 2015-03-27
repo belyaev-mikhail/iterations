@@ -26,7 +26,7 @@ namespace itemizing_iterator_impl {
 
     template<class ...Elements>
     struct peek_tuple_element<0, Elements...> {
-        static auto doit(size_t realIx, const std::tuple<Elements...>& tp) -> decltype(auto) {
+        static auto doit(size_t, const std::tuple<Elements...>& tp) -> decltype(auto) {
             return std::get<0>(tp); 
         }
     };

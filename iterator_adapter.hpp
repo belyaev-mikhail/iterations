@@ -21,8 +21,27 @@ struct iterator_pseudo_ptr {
     T* operator->() const { return &value; }
 };
 
+
 namespace impl_
 {
+
+template<class Lhv, class Rhv>
+struct common_iterator_category_r {
+    using type = std::forward_iterator_tag;
+};
+template<>
+struct common_iterator_category_r<std::random_access_iterator_tag, std::random_access_iterator_tag> {
+    using type = std::random_access_iterator_tag;
+};
+template<>
+struct common_iterator_category_r<std::random_access_iterator_tag, std::bidirectional_iterator_tag> {
+    using type = std::bidirectional_iterator_tag;
+};
+template<>
+struct common_iterator_category_r<std::bidirectional_iterator_tag, std::random_access_iterator_tag> {
+    using type = std::bidirectional_iterator_tag;
+};
+
 
 template<class T>
 iterator_pseudo_ptr<T> take_ptr(T&& value) {
@@ -48,6 +67,17 @@ template<class F>
 using invoke = typename F::type;
 
 } /* namespace impl_ */
+
+template<class Lhv, class Rhv>
+using common_iterator_category = typename impl_::common_iterator_category_r<Lhv, Rhv>::type;
+
+template<class It>
+using iterator_category_for = typename std::iterator_traits<It>::iterator_category;
+
+template<class Lhv, class Rhv>
+using common_iterator_category_for = common_iterator_category<
+        iterator_category_for<Lhv>, iterator_category_for<Rhv>
+    >;
 
 template<class Simple>
 struct forward_iterator_adapter {
@@ -275,6 +305,9 @@ template<class SimpleIt>
 random_access_iterator_adapter<SimpleIt> adapt_simple_iterator(SimpleIt it, std::random_access_iterator_tag) {
     return random_access_iterator_adapter<SimpleIt>{ it };
 }
+
+template<class It, class Category>
+using iterator_adapter = decltype(adapt_simple_iterator(std::declval<It>(), Category{}));
 
 #define QUICK_RETURN(...) -> decltype(__VA_ARGS__){ return __VA_ARGS__; }
 
