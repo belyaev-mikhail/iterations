@@ -9,13 +9,14 @@
 #define MAP_ITERATOR_HPP_
 
 #include "iterator_adapter.hpp"
+#include "copy_assignable.hpp"
 
 namespace essentials {
 namespace iterations {
 
 template<class It, class Mapping>
 struct mapped_iterator_simple: simple_iterator_facade<It> {
-    Mapping mapping;
+    copy_assignable_function<Mapping> mapping;
 
     mapped_iterator_simple(It it, Mapping mapping):
         simple_iterator_facade<It>{it}, mapping(mapping) {}

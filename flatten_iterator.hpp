@@ -9,6 +9,7 @@
 #define FLATTEN_ITERATOR_HPP_
 
 #include "iterator_adapter.hpp"
+#include "copy_assignable.hpp"
 
 namespace essentials {
 namespace iterations {
@@ -20,7 +21,7 @@ struct flattened_iterator_simple {
 
     using ChildIt = decltype(overloaded_begin(*parent));
 
-    ChildIt child; // option<ChildIt> ???
+    copy_assignable_value<ChildIt> child; // option<ChildIt> ???
 
     flattened_iterator_simple(It begin, It end):
             parent(begin), parentEnd(end), child() {
@@ -29,7 +30,7 @@ struct flattened_iterator_simple {
     }
 
     bool invariant() const {
-        return parent == parentEnd || child != overloaded_end(*parent);
+        return parent == parentEnd || child.get() != overloaded_end(*parent);
     }
 
     void restore_invariant() {
@@ -40,16 +41,16 @@ struct flattened_iterator_simple {
         }
     }
 
-    auto value() const -> decltype(*child) { return *child; }
+    auto value() const -> decltype(*child.get()) { return *child.get(); }
     void next() {
-        ++child;
+        ++child.get();
         restore_invariant();
     }
 
     bool equals(flattened_iterator_simple other) const { 
         if(parent != other.parent || parentEnd != other.parentEnd) return false;
         if(parent == parentEnd) return true;
-        return child == other.child;
+        return child.get() == other.child.get();
     }
 
 };

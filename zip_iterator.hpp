@@ -9,6 +9,7 @@
 #define ZIP_ITERATOR_HPP_
 
 #include "iterator_adapter.hpp"
+#include "copy_assignable.hpp"
 
 namespace essentials {
 namespace iterations {
@@ -18,7 +19,7 @@ struct zipping_iterator_simple {
 
     ItLhv lhv;
     ItRhv rhv;
-    Zipper zipper;
+    copy_assignable_function<Zipper> zipper;
 
     zipping_iterator_simple(ItLhv lhv, ItRhv rhv, Zipper zipper):
         lhv(lhv), rhv(rhv), zipper(zipper) {}

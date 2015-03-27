@@ -8,14 +8,17 @@
 #ifndef FILTER_ITERATOR_HPP_
 #define FILTER_ITERATOR_HPP_
 
+#include "copy_assignable.hpp"
+
 namespace essentials {
 namespace iterations {
 
 template<class It, class Pred>
 struct filtered_iterator_simple: simple_iterator_facade<It> {
     It baseEnd;
-    Pred pred;
+    copy_assignable_function<Pred> pred;
 
+    filtered_iterator_simple() = default;
     filtered_iterator_simple(It it, It end, Pred pred):
             simple_iterator_facade<It>{it}, baseEnd(end), pred(pred) {
         restore_invariant();
