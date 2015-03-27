@@ -18,6 +18,7 @@ struct counting_iterator_simple {
 
     ValueType val;
 
+    counting_iterator_simple(): val(0) {};
     counting_iterator_simple(ValueType start):
         val(start) {};
 

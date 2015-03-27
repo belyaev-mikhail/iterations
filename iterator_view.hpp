@@ -22,6 +22,8 @@
 #include "sequence_iterator.hpp"
 #include "count_iterator.hpp"
 #include "itemize_iterator.hpp"
+#include "cycle_iterator.hpp"
+#include "product_iterator.hpp"
 
 #define ITER_VIEW_QRET(...) ->decltype(__VA_ARGS__){ return __VA_ARGS__; }
 
@@ -128,6 +130,24 @@ struct iterator_view {
     iterator_view drop(size_t howmany) const {
         using namespace iterator_view_impl;
         return { next_with_limit(begin_, end_, howmany), end_ };
+    }
+
+    auto cycle() const {
+        return create(
+            cycle_iterator(begin_, end_, begin_),
+            cycle_iterator(begin_, end_, end_)
+        );
+    }
+
+    template<class OtherIt, class ResFun>
+    auto product(const iterator_view<OtherIt>& other, ResFun fun) const {
+        return create(
+            product_iterator(begin_, other.begin_, other.end_, other.begin_, fun),
+            // other.begin_ here is on purpose:
+            // unless we specify the end iterator as "outer.end_ x inner.begin_",
+            // the exit condition will be unsatisfiable
+            product_iterator(end_, other.begin_, other.end_, other.begin_, fun)
+        );
     }
 
     /* terminating operations */
@@ -337,6 +357,11 @@ template<class ...Elements>
 auto itemize(Elements&&... elements) {
     auto storage = std::make_shared<std::tuple<Elements...>>(std::forward<Elements>(elements)...);
     return view(itemize_iterator(storage, 0), itemize_iterator(storage, sizeof...(Elements)));
+}
+
+template<class E>
+auto viewSingleReference(E& e) {
+    return view(&e, &e + 1);
 }
 
 } /* namespace iterations */
