@@ -146,8 +146,10 @@ struct iterator_view {
         return std::move(holder);
     }
 
-    template<class F>
-    std::enable_if_t<std::is_copy_constructible<value_type>::value && std::is_copy_constructible<F>::value, value_type> reduce(F f) const {
+    template<class R, class F>
+    std::enable_if_t<std::is_copy_constructible<value_type>::value && std::is_copy_constructible<F>::value, value_type>
+    reduce(R&& deflt, F f) const {
+        if(empty()) return value_type{ std::forward<R>(deflt) };
         return drop(1).fold(*begin_, f);
     }
 
