@@ -132,7 +132,8 @@ struct iterator_view {
         return { next_with_limit(begin_, end_, howmany), end_ };
     }
 
-    auto cycle() const {
+    auto cycle() const
+            -> cycling_iterator<It> {
         return create(
             cycle_iterator(begin_, end_, begin_),
             cycle_iterator(begin_, end_, end_)
@@ -140,7 +141,8 @@ struct iterator_view {
     }
 
     template<class OtherIt, class ResFun>
-    auto product(const iterator_view<OtherIt>& other, ResFun fun) const {
+    auto product(const iterator_view<OtherIt>& other, ResFun fun) const
+            -> product_making_iterator<It, OtherIt, ResFun> {
         return create(
             product_iterator(begin_, other.begin_, other.end_, other.begin_, fun),
             // other.begin_ here is on purpose:
@@ -363,6 +365,7 @@ template<class E>
 auto viewSingleReference(E& e) {
     return view(&e, &e + 1);
 }
+
 
 } /* namespace iterations */
 } /* namespace essentials */

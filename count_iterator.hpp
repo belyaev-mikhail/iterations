@@ -43,8 +43,11 @@ struct counting_iterator_simple {
     }
 };
 
+template<class ValueType>
+using counting_iterator = iterator_adapter<counting_iterator_simple<ValueType>, std::random_access_iterator_tag>;
+
 template<class ValueType = size_t>
-auto count_iterator(ValueType from) {
+auto count_iterator(ValueType from) -> counting_iterator<ValueType> {
     return adapt_simple_iterator(
         counting_iterator_simple<ValueType>{from},
         std::random_access_iterator_tag{}

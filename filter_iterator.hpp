@@ -36,15 +36,16 @@ struct filtered_iterator_simple: simple_iterator_facade<It> {
 };
 
 template<class It, class Pred>
-auto filter_iterator(It it, It itEnd, Pred pred) {
+using filtered_iterator = forward_iterator_adapter<filtered_iterator_simple<It, Pred>>;
+
+template<class It, class Pred>
+auto filter_iterator(It it, It itEnd, Pred pred) -> filtered_iterator<It, Pred> {
     return adapt_simple_iterator(
         filtered_iterator_simple<It, Pred>{it, itEnd, pred},
         std::forward_iterator_tag{}
     );
 }
 
-template<class It, class Pred>
-using filtered_iterator = forward_iterator_adapter<filtered_iterator_simple<It, Pred>>;
 
 } /* namespace iterations */
 } /* namespace essentials */

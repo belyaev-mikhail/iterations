@@ -56,15 +56,16 @@ struct flattened_iterator_simple {
 };
 
 template<class It>
-auto flatten_iterator(It it, It itEnd) {
+using flattened_iterator = forward_iterator_adapter<flattened_iterator_simple<It>>;
+
+template<class It>
+auto flatten_iterator(It it, It itEnd) -> flattened_iterator<It> {
     return adapt_simple_iterator(
         flattened_iterator_simple<It>{it, itEnd},
         std::forward_iterator_tag{}
     );
 }
 
-template<class It>
-using flattened_iterator = forward_iterator_adapter<flattened_iterator_simple<It>>;
 
 } /* namespace iterations */
 } /* namespace essentials */
