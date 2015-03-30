@@ -29,9 +29,9 @@ template<class Lhv, class Rhv>
 struct common_iterator_category_r {
     using type = std::forward_iterator_tag;
 };
-template<>
-struct common_iterator_category_r<std::random_access_iterator_tag, std::random_access_iterator_tag> {
-    using type = std::random_access_iterator_tag;
+template<class Same>
+struct common_iterator_category_r<Same, Same> {
+    using type = Same;
 };
 template<>
 struct common_iterator_category_r<std::random_access_iterator_tag, std::bidirectional_iterator_tag> {
