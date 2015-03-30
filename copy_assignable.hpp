@@ -32,9 +32,10 @@ struct copy_assignable_function {
     }
 
     template<class ...Args>
-    auto operator()(Args&&... args) const {
+    auto operator()(Args&&... args) const -> decltype(std::declval<F>()(std::forward<Args>(args)...)) {
         return f(std::forward<Args>(args)...);
     }
+
 };
 
 template<class T>

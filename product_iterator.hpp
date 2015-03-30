@@ -53,8 +53,15 @@ struct product_making_iterator_simple {
 };
 
 template<class OuterIt, class InnerIt, class ResFun>
+using product_making_iterator = iterator_adapter<
+        product_making_iterator_simple<OuterIt, InnerIt, ResFun>,
+        common_iterator_category<common_iterator_category_for<OuterIt, InnerIt>, std::bidirectional_iterator_tag>
+    >;
+
+template<class OuterIt, class InnerIt, class ResFun>
 auto product_iterator(OuterIt outerIt, InnerIt begin, 
-                      InnerIt end, InnerIt it, ResFun finalizer) {
+                      InnerIt end, InnerIt it, ResFun finalizer)
+        -> product_making_iterator<OuterIt, InnerIt, ResFun> {
     return adapt_simple_iterator(
         product_making_iterator_simple<OuterIt, InnerIt, ResFun>{outerIt, begin, end, it, finalizer},
         common_iterator_category<common_iterator_category_for<OuterIt, InnerIt>, std::bidirectional_iterator_tag>{}

@@ -25,10 +25,13 @@ struct mapped_iterator_simple: simple_iterator_facade<It> {
 };
 
 template<class It, class Mapping>
-auto map_iterator(It it, Mapping mapping) {
+using mapped_iterator = iterator_adapter<mapped_iterator_simple<It, Mapping>, iterator_category_for<It>>;
+
+template<class It, class Mapping>
+auto map_iterator(It it, Mapping mapping) -> mapped_iterator<It, Mapping> {
     return adapt_simple_iterator(
         mapped_iterator_simple<It, Mapping>{it, mapping},
-        typename std::iterator_traits<It>::iterator_category{}
+        iterator_category_for<It>{}
     );
 }
 

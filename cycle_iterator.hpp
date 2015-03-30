@@ -47,7 +47,13 @@ struct cycling_iterator_simple {
 };
 
 template<class It>
-auto cycle_iterator(It begin, It end, It it) {
+using cycling_iterator = iterator_adapter<
+    cycling_iterator_simple<It>,
+    common_iterator_category<iterator_category_for<It>, std::bidirectional_iterator_tag>
+>;
+
+template<class It>
+auto cycle_iterator(It begin, It end, It it) -> cycling_iterator<It> {
     return adapt_simple_iterator(
         cycling_iterator_simple<It>{begin, end, it},
         common_iterator_category<iterator_category_for<It>, std::bidirectional_iterator_tag>{}
