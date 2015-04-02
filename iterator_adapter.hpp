@@ -339,13 +339,13 @@ struct simple_iterator_facade {
 template<class Con>
 auto overloaded_begin(Con&& con) {
     using std::begin;
-    return begin(con);
+    return begin(std::forward<Con>(con));
 }
 
 template<class Con>
 auto overloaded_end(Con&& con) {
     using std::end;
-    return end(con);
+    return end(std::forward<Con>(con));
 }
 
 } /* namespace essentials */
