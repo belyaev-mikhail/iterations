@@ -59,7 +59,7 @@ using itemizing_iterator = forward_iterator_adapter<itemizing_iterator_simple<El
 template<class ...Elements>
 auto itemize_iterator(std::shared_ptr<std::tuple<Elements...>> data, size_t position) {
     return adapt_simple_iterator(
-        itemizing_iterator<Elements...>{ data, position },
+        itemizing_iterator_simple<Elements...>{ data, position },
         std::forward_iterator_tag{}
     );
 }
