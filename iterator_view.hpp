@@ -24,6 +24,7 @@
 #include "itemize_iterator.hpp"
 #include "cycle_iterator.hpp"
 #include "product_iterator.hpp"
+#include "memo_iterator.hpp"
 
 #define ITER_VIEW_QRET(...) ->decltype(__VA_ARGS__){ return __VA_ARGS__; }
 
@@ -133,16 +134,24 @@ struct iterator_view {
     }
 
     auto cycle() const
-            -> cycling_iterator<It> {
+            -> iterator_view<cycling_iterator<It>> {
         return create(
             cycle_iterator(begin_, end_, begin_),
             cycle_iterator(begin_, end_, end_)
         );
     }
 
+    auto memo() const
+            -> iterator_view<memoizing_iterator<It>> {
+        return create(
+            memo_iterator(begin_),
+            memo_iterator(end_)
+        );
+    }
+
     template<class OtherIt, class ResFun>
     auto product(const iterator_view<OtherIt>& other, ResFun fun) const
-            -> product_making_iterator<It, OtherIt, ResFun> {
+            -> iterator_view<product_making_iterator<It, OtherIt, ResFun>> {
         return create(
             product_iterator(begin_, other.begin_, other.end_, other.begin_, fun),
             // other.begin_ here is on purpose:
