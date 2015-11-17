@@ -292,6 +292,11 @@ struct random_access_iterator_adapter {
 };
 
 template<class SimpleIt>
+forward_iterator_adapter<SimpleIt> adapt_simple_iterator(SimpleIt it, std::input_iterator_tag) {
+    return forward_iterator_adapter<SimpleIt>{ it };
+}
+
+template<class SimpleIt>
 forward_iterator_adapter<SimpleIt> adapt_simple_iterator(SimpleIt it, std::forward_iterator_tag) {
     return forward_iterator_adapter<SimpleIt>{ it };
 }
