@@ -341,6 +341,11 @@ auto operator>>(const iterator_view<LIt>& self, const iterator_view<RIt>& other)
     return self.seq(other);
 }
 
+template<class LIt, class RIt>
+auto operator*(const iterator_view<LIt>& self, const iterator_view<RIt>& other) {
+    return self.product(other, [](auto&& a, auto&& b) { return std::make_pair(a, b); });
+}
+
 template<class It>
 iterator_view<It> view(It begin, It end) {
     return { begin, end };
