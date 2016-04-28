@@ -33,8 +33,9 @@ struct counting_iterator_simple {
     bool equals(const counting_iterator_simple& other) const {
         return val == other.val;
     }
-    ValueType distance(const counting_iterator_simple& other) const {
-        return val - other.val;
+    // do not return ValueType, as for some types difference has different type than its arguments
+    auto distance(const counting_iterator_simple& other) const {
+        return val - other.val; 
     }
     int compare(const counting_iterator_simple& other) const {
         return (val < other.val) ? (-1) :
