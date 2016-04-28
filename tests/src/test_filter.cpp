@@ -17,6 +17,16 @@ TEST(filter, simple) {{
     ASSERT_EQ(view.toVector(), expected);
 }}
 
+TEST(filter, empty) {{
+    std::vector<int> v1 {};
+
+    auto&& view = viewContainer(v1).filter(LAM(x, x % 2 == 0));
+    std::vector<int> expected{};
+
+    ASSERT_TRUE(std::is_reference<decltype(*view.begin())>::value); // filter does return references
+    ASSERT_EQ(view.toVector(), expected);
+}}
+
 TEST(filter, simpleNoArg) {{
     std::vector<int> v1 {0, 2, 0, 4, 0, 0, 6, 8, 19};
 

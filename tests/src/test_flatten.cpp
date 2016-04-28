@@ -21,6 +21,16 @@ TEST(flatten, simple) {{
     ASSERT_EQ(view.toVector(), expected);
 }}
 
+TEST(flatten, empty) {{
+    std::vector<std::vector<int>> v1 {};
+
+    auto&& view = viewContainer(v1).flatten();
+    std::vector<int> expected{};
+
+    ASSERT_TRUE(std::is_reference<decltype(*view.begin())>::value); // flatten keeps references intact
+    ASSERT_EQ(view.toVector(), expected);
+}}
+
 TEST(flatten, references) {{
     std::vector<std::vector<int>> v1 {
         { 1, 2, 3 },
