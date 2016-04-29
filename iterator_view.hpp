@@ -391,6 +391,11 @@ auto viewSingleReference(E& e) {
     return view(&e, &e + 1);
 }
 
+template<class T>
+auto emptyView() {
+    return view<std::decay_t<T>*>(nullptr, nullptr);
+}
+
 
 } /* namespace iterations */
 } /* namespace essentials */
