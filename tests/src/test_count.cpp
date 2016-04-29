@@ -16,6 +16,15 @@ TEST(count, simple) {{
     ASSERT_EQ(view.toVector(), expected);
 }}
 
+TEST(count, empty) {{
+    auto view = range(1, 1);
+    std::vector<int> expected {};
+
+    ASSERT_TRUE(!std::is_reference<decltype(*view.begin())>::value);
+    ASSERT_TRUE(view.empty());
+    ASSERT_EQ(view.toVector(), expected);
+}}
+
 TEST(count, infinite) {{
     // well, not _technically_ infinite
     auto view = range(0, std::numeric_limits<int>::max());

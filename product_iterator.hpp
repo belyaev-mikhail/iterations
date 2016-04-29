@@ -27,7 +27,13 @@ struct product_making_iterator_simple {
         outerIt_(outerIt), innerIt_(it), innerBegin_(begin), 
         innerEnd_(end), finalizer_(finalizer) {};
 
+    bool likeTotallyEmpty() const {
+        return innerBegin_ == innerEnd_;
+    }
+
     void next() {
+        if(likeTotallyEmpty()) return;
+
         ++innerIt_;
         if(innerIt_ == innerEnd_) {
             ++outerIt_;
@@ -36,6 +42,8 @@ struct product_making_iterator_simple {
     }
 
     void prev() {
+        if(likeTotallyEmpty()) return;
+
         if(innerIt_ == innerBegin_) {
             --outerIt_;
             innerIt_ = innerEnd_;
@@ -48,6 +56,7 @@ struct product_making_iterator_simple {
     }
 
     bool equals(const product_making_iterator_simple& other) const {
+        if(likeTotallyEmpty()) return other.likeTotallyEmpty();
         return outerIt_ == other.outerIt_ && innerIt_ == other.innerIt_;
     }
 };
@@ -66,6 +75,31 @@ auto product_iterator(OuterIt outerIt, InnerIt begin,
         product_making_iterator_simple<OuterIt, InnerIt, ResFun>{outerIt, begin, end, it, finalizer},
         common_iterator_category<common_iterator_category_for<OuterIt, InnerIt>, std::bidirectional_iterator_tag>{}
     );
+}
+
+namespace product_iterator_impl {
+
+template<class T> struct remove_rvalue_reference{ using type = T; };
+template<class T> struct remove_rvalue_reference<T&&> { using type = T; };
+template<class T> using remove_rvalue_reference_t = typename remove_rvalue_reference<T>::type;
+
+struct PairMaker{
+    template<class Fst, class Snd>
+    auto operator()(Fst&& fst, Snd&& snd) const {
+        return std::pair<remove_rvalue_reference_t<Fst>, remove_rvalue_reference_t<Snd>> {
+            std::forward<Fst>(fst),
+            std::forward<Snd>(snd)
+        };
+    }
+};
+
+}
+
+template<class OuterIt, class InnerIt>
+auto product_iterator(OuterIt outerIt, InnerIt begin, 
+                      InnerIt end, InnerIt it)
+        -> product_making_iterator<OuterIt, InnerIt, product_iterator_impl::PairMaker> {
+    return product_iterator(outerIt, begin, end, it, product_iterator_impl::PairMaker{});
 }
 
 } /* namespace iterations */
