@@ -17,7 +17,7 @@ namespace iterations {
 
 namespace storing_iterator_impl_ {
     template<class C>
-    using iterator_type = decltype(overloaded_begin(std::declval<C>()));
+    using iterator_type = decltype(overloaded_begin(std::declval<C&>()));
 }
 
 template<class Container>

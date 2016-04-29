@@ -161,6 +161,17 @@ struct iterator_view {
         );
     }
 
+    template<class OtherIt>
+    auto product(const iterator_view<OtherIt>& other) const {
+        return create(
+            product_iterator(begin_, other.begin_, other.end_, other.begin_),
+            // other.begin_ here is on purpose:
+            // unless we specify the end iterator as "outer.end_ x inner.begin_",
+            // the exit condition will be unsatisfiable
+            product_iterator(end_, other.begin_, other.end_, other.begin_)
+        );
+    }
+
     /* terminating operations */
 
     template<class F>
@@ -343,7 +354,7 @@ auto operator>>(const iterator_view<LIt>& self, const iterator_view<RIt>& other)
 
 template<class LIt, class RIt>
 auto operator*(const iterator_view<LIt>& self, const iterator_view<RIt>& other) {
-    return self.product(other, [](auto&& a, auto&& b) { return std::make_pair(a, b); });
+    return self.product(other);
 }
 
 template<class It>

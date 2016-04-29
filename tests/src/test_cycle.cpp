@@ -16,6 +16,15 @@ TEST(cycle, simple) {{
     ASSERT_EQ(view.toVector(), expected);
 }}
 
+TEST(cycle, empty) {{
+    auto view = range(1, 4).drop(4).cycle();
+    std::vector<int> expected {};
+
+    ASSERT_TRUE(!std::is_reference<decltype(*view.begin())>::value); // range produces non-references
+    ASSERT_EQ(view.toVector(), expected);
+}}
+
+
 TEST(cycle, reference) {{
 
     std::vector<int> contents { 1,2,3 };

@@ -18,7 +18,9 @@ struct iterator_pseudo_ptr {
     T value;
     
     T& operator*() const { return value; }
+    T& operator*() { return value; }
     T* operator->() const { return &value; }
+    T* operator->() { return &value; }
 };
 
 
@@ -155,7 +157,7 @@ struct bidir_iterator_adapter {
     }
     
     pointer operator->() const {
-        return take_ptr(**this);
+        return impl_::take_ptr(**this);
     }
     
     bidir_iterator_adapter operator++(int) {
