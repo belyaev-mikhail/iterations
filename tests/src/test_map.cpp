@@ -35,4 +35,17 @@ TEST(map, chain) {{
     ASSERT_EQ(view.toVector(), expected);
 }}
 
+TEST(map, references) {{
+    std::vector<int> v1 {1,2,3,4};
+
+    auto&& view = viewContainer(v1).map(LAM(x, x));
+
+    *(std::next(view.begin(), 3)) = 42;
+
+    ASSERT_TRUE(std::is_reference<decltype(*view.begin())>::value); // map does not return a reference unless the mapper does
+
+    std::vector<int> expected{ 1, 2, 3, 42 };
+    ASSERT_EQ(view.toVector(), expected);
+}}
+
 } /* namespace */
