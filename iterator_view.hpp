@@ -249,6 +249,11 @@ struct iterator_view {
         return empty() ? std::forward<R>(def) : *begin_;
     }
 
+    template<class OtherView>
+    void assign(OtherView&& other) {
+        std::copy(overloaded_begin(other), overloaded_end(other), begin_);
+    }
+
     template<class Container>
     Container to() const {
         return Container{ begin_, end_ };
