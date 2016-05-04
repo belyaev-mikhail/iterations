@@ -25,6 +25,8 @@
 #include "cycle_iterator.hpp"
 #include "product_iterator.hpp"
 #include "memo_iterator.hpp"
+#include "generate_iterator.hpp"
+
 
 #define ITER_VIEW_QRET(...) ->decltype(__VA_ARGS__){ return __VA_ARGS__; }
 
@@ -146,6 +148,18 @@ struct iterator_view {
         return create(
             memo_iterator(begin_),
             memo_iterator(end_)
+        );
+    }
+
+    auto reverse() const
+            -> iterator_view<std::reverse_iterator<It>> {
+
+        static_assert( std::is_same<iterator_category_for<It>, std::bidirectional_iterator_tag>::value
+                     || std::is_same<iterator_category_for<It>, std::random_access_iterator_tag>::value,
+                     "reverse() requires at least a bidirectional iterator" );
+        return create(
+            std::reverse_iterator<It>(end_),
+            std::reverse_iterator<It>(begin_)
         );
     }
 
@@ -396,6 +410,29 @@ auto emptyView() {
     return view<std::decay_t<T>*>(nullptr, nullptr);
 }
 
+template<class ValueType, class Seed, class Generator, class Producer>
+auto unfoldMap(Seed&& seed, Generator gen, Producer prod, size_t limit = std::numeric_limits<size_t>::max()) {
+    auto begin_ = generate_iterator<ValueType>(std::forward<Seed>(seed), gen, prod);
+    auto end_ = generate_iterator_limit<ValueType>(limit, gen, prod);
+    return view( begin_, end_ );
+}
+
+template<class ValueType, class Seed, class Generator>
+auto unfold(Seed&& seed, Generator gen, size_t limit = std::numeric_limits<size_t>::max()) {
+    auto id = [](auto&& x)->decltype(auto){ return x; };
+    auto begin_ = generate_iterator<ValueType>(std::forward<Seed>(seed), gen, id);
+    auto end_ = generate_iterator_limit<ValueType>(limit, gen, id);
+    return view( begin_, end_ );
+}
+
+template<class Callable>
+auto generate(Callable callable, size_t limit = std::numeric_limits<size_t>::max()) {
+    auto id = [](auto&& x)->decltype(auto){ return x; };
+    auto call = [](auto&& f)->decltype(auto){ return f(); };
+    auto begin_ = generate_iterator<Callable>(callable, id, call);
+    auto end_ = generate_iterator_limit<Callable>(limit, id, call);
+    return view( begin_, end_ );
+}
 
 } /* namespace iterations */
 } /* namespace essentials */
