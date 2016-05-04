@@ -51,5 +51,18 @@ TEST(general, size) {{
 
 }}
 
+TEST(general, reverse) {{
+    std::vector<int> us {1,2,3,4,5};
+    auto view = viewContainer(us).reverse();
+
+    std::vector<int> expected {5,4,3,2,1};
+    ASSERT_EQ(std::vector<int>(std::begin(view), std::end(view)), expected);
+
+    std::vector<int> empty{};
+
+    auto emptyView = viewContainer(empty).reverse();
+    ASSERT_EQ(std::vector<int>(std::begin(emptyView), std::end(emptyView)), empty);
+}}
+
 
 } /* namespace */

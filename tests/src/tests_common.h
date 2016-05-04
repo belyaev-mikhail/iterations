@@ -17,4 +17,21 @@ auto asValueVector(essentials::iterations::iterator_view<It> v) {
     return v.template to<std::vector<value_type>>();
 }
 
+template<class T>
+struct is_assignable {
+    static const constexpr auto value = false;
+};
+
+template<class T>
+struct is_assignable<const T&> {
+    static const constexpr auto value = false;
+};
+
+template<class T>
+struct is_assignable<T&> {
+    static const constexpr auto value = true;
+};
+
+#define IS_ASSIGNABLE(...) is_assignable<decltype(__VA_ARGS__)>::value
+
 #endif /* TESTS_COMMON_H */
