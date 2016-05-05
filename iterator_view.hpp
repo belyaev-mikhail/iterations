@@ -14,6 +14,8 @@
 #include <unordered_set>
 #include <algorithm>
 
+#include "abstract_iterator.hpp"
+#include "bfs_iterator.hpp"
 #include "map_iterator.hpp"
 #include "flatten_iterator.hpp"
 #include "filter_iterator.hpp"
@@ -254,6 +256,15 @@ struct iterator_view {
         std::copy(overloaded_begin(other), overloaded_end(other), begin_);
     }
 
+    iterator_view<abstracting_iterator<It>> abstract() const {
+        return create(abstract_iterator(begin_), abstract_iterator(end_));
+    }
+
+    template<class Accessor>
+    auto bfs(Accessor acc) {
+        return create(bfs_iterator(*this, acc), bfs_iterator(create(end_, end_), acc));
+    }
+
     template<class Container>
     Container to() const {
         return Container{ begin_, end_ };
@@ -438,6 +449,9 @@ auto generate(Callable callable, size_t limit = std::numeric_limits<size_t>::max
     auto end_ = generate_iterator_limit<Callable>(limit, id, call);
     return view( begin_, end_ );
 }
+
+template<class ValueType, class Category = std::forward_iterator_tag>
+using generic_view = iterator_view<generic_iterator<ValueType, Category>>;
 
 } /* namespace iterations */
 } /* namespace essentials */
