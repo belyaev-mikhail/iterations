@@ -23,6 +23,9 @@ struct bfs_identity {
 
 template<class BaseIt, class Accessor = bfs_identity>
 struct bfs_iterator_simple: simple_iterator_facade<BaseIt> {
+    using base_t = simple_iterator_facade<BaseIt>;
+    using base_t::base;
+    using base_t::value;
 
     using inner_view = decltype(std::declval<Accessor>()(*std::declval<BaseIt>()));
 
@@ -30,31 +33,43 @@ struct bfs_iterator_simple: simple_iterator_facade<BaseIt> {
     Accessor accessor;
 
     bfs_iterator_simple() = default;
-    bfs_iterator_simple(inner_view inner): simple_iterator_facade(), que{}, accessor{} {
+    bfs_iterator_simple(inner_view inner): 
+            base_t(overloaded_begin(inner)), que{}, accessor{} {
         que = que.push(inner);
         base = overloaded_begin(que.top());
+        restore_invariant();
     };
     bfs_iterator_simple(inner_view inner, Accessor accessor):
-            simple_iterator_facade(), que{}, accessor(accessor) {
+            base_t(overloaded_begin(inner)), que{}, accessor(accessor) {
         que = que.push(inner);
         base = overloaded_begin(que.top());
+        restore_invariant();
     };
 
     bool invariant() const {
         return que.empty() || (!que.empty() && base != overloaded_end(que.top()));
     }
 
-    void next() {
-        if(que.empty()) return;
-
-        que = que.push(accessor(value()));
-        simple_iterator_facade::next();
-
+    void restore_invariant() {
         while(!invariant()) {
             que = que.pop();
             if(!que.empty())
                 base = overloaded_begin(que.top());
         }
+    }
+
+    void next() {
+        if(que.empty()) return;
+
+        que = que.push(accessor(value()));
+        base_t::next();
+
+        restore_invariant();
+    }
+
+    bool equals(const bfs_iterator_simple& that) const {
+        return (que.empty() && that.que.empty()) 
+            || base_t::equals(that); 
     }
 };
 
@@ -65,7 +80,7 @@ template<class View, class Accessor = bfs_identity>
 auto bfs_iterator(View from) -> bfs_ap_iterator<decltype(overloaded_begin(from)), Accessor> {
     using It = decltype(overloaded_begin(from));
     return adapt_simple_iterator(
-        bfs_ap_iterator<It, Accessor>{from},
+        bfs_iterator_simple<It, Accessor>{from},
         std::forward_iterator_tag{}
     );
 }
@@ -74,7 +89,7 @@ template<class View, class Accessor = bfs_identity>
 auto bfs_iterator(View from, Accessor acc) -> bfs_ap_iterator<decltype(overloaded_begin(from)), Accessor> {
     using It = decltype(overloaded_begin(from));
     return adapt_simple_iterator(
-        bfs_ap_iterator<It, Accessor>{from, acc},
+        bfs_iterator_simple<It, Accessor>{from, acc},
         std::forward_iterator_tag{}
     );
 }

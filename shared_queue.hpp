@@ -8,6 +8,8 @@
 #ifndef SHARED_QUEUE_HPP
 #define SHARED_QUEUE_HPP
 
+#include "shared_stack.hpp"
+
 namespace essentials {
 namespace iterations {
 
