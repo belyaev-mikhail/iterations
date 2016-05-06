@@ -57,5 +57,14 @@ TEST(bfs, simple) {{
 
 }}
 
+TEST(bfs, empty) {{
+    
+    auto bfs = emptyView<int>().bfs(LAM(i, emptyView<int>()));
+
+    std::vector<int> expected {};
+
+    ASSERT_EQ(bfs.toVector(), expected);
+
+}}
 
 } /* namespace */
