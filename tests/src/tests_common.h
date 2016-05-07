@@ -34,4 +34,6 @@ struct is_assignable<T&> {
 
 #define IS_ASSIGNABLE(...) is_assignable<decltype(__VA_ARGS__)>::value
 
+#define TRACE std::cerr << PRETTY_FUNCTION << ":" << __LINE__ << std::endl
+
 #endif /* TESTS_COMMON_H */

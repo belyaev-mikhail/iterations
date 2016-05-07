@@ -9,6 +9,7 @@
 #define SHARED_STACK_HPP
 
 #include <memory>
+#include <iostream>
 
 namespace essentials {
 namespace iterations {

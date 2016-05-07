@@ -8,6 +8,8 @@
 #ifndef DFS_ITERATOR_HPP
 #define DFS_ITERATOR_HPP
 
+#include <iostream>
+
 #include "iterator_adapter.hpp"
 #include "shared_queue.hpp"
 
@@ -69,6 +71,8 @@ struct dfs_iterator_simple {
         }
     }
 
+    auto value() const -> decltype(*current()) { return *current(); }
+
     void next() {
         if(viewStack.empty()) return;
         down();
@@ -76,6 +80,8 @@ struct dfs_iterator_simple {
     }
 
     bool equals(const dfs_iterator_simple& that) const {
+        if(viewStack.empty() != that.viewStack.empty())
+            return false;
         return (viewStack.empty() && that.viewStack.empty()) 
             || current() == that.current();
     }
