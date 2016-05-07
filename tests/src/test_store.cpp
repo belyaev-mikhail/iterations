@@ -19,11 +19,22 @@ TEST(store, sets) {{
     std::vector<int> v { 1, 15, 4, 1, 8 };
 
     auto&& w = viewContainer(v) >> viewContainer(v);
-    auto&& res = w.toSetView();
+    {
+        auto&& res = w.toSetView();
 
-    std::vector<int> expected { 1, 4, 8, 15 };  // SUDDENLY!
+        std::vector<int> expected { 1, 4, 8, 15 };  // SUDDENLY!
 
-    ASSERT_EQ(res.toVector(), expected);
+        ASSERT_EQ(res.toVector(), expected);
+    }
+
+    {
+        auto&& res = w.toMultiSetView();
+
+        // toMultiSetView() is basically sorting
+        std::vector<int> expected { 1, 1, 1, 1, 4, 4, 8, 8, 15, 15 };
+
+        ASSERT_EQ(res.toVector(), expected);
+    }
 }}
 
 TEST(store, access) {{

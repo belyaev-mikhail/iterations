@@ -266,6 +266,11 @@ struct iterator_view {
         return create(bfs_iterator(*this, acc), bfs_iterator(create(end_, end_), acc));
     }
 
+    template<class Accessor>
+    auto dfs(Accessor acc) {
+        return create(dfs_iterator(*this, acc), dfs_iterator(create(end_, end_), acc));
+    }
+
     template<class Container>
     Container to() const {
         return Container{ begin_, end_ };
