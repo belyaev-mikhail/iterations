@@ -36,6 +36,10 @@ struct copy_assignable_function {
         return f(std::forward<Args>(args)...);
     }
 
+    operator F() const {
+        return f;
+    }
+
 };
 
 template<class T>

@@ -12,11 +12,14 @@
 #include <list>
 #include <set>
 #include <unordered_set>
+#include <map>
+#include <unordered_map>
 #include <algorithm>
 
 #include "abstract_iterator.hpp"
 #include "bfs_iterator.hpp"
 #include "dfs_iterator.hpp"
+#include "group_iterator.hpp"
 #include "map_iterator.hpp"
 #include "flatten_iterator.hpp"
 #include "filter_iterator.hpp"
@@ -55,7 +58,19 @@ namespace iterator_view_impl {
     It next_with_limit(It it, It limit, size_t advance) {
         return next_with_limit(it, limit, advance, typename std::iterator_traits<It>::iterator_category{});
     }
+
+    template<class T>
+    struct keyValue;
+
+    template<class K, class V>
+    struct keyValue<std::pair<K, V>> {
+        using key = K;
+        using value = V;
+    };
 }
+
+template<class It>
+struct iterator_view;
 
 template<class It>
 struct iterator_view {
@@ -271,6 +286,14 @@ struct iterator_view {
         return create(dfs_iterator(*this, acc), dfs_iterator(create(end_, end_), acc));
     }
 
+    template<class KeyExtractor>
+    auto group(KeyExtractor ex) {
+        return create(
+            group_iterator<It, KeyExtractor, iterator_view<grouping_iterator_child_by_ext<It, KeyExtractor>>>(begin_, end_, ex),
+            group_iterator<It, KeyExtractor, iterator_view<grouping_iterator_child_by_ext<It, KeyExtractor>>>(end_, end_, ex)
+        );
+    }
+
     template<class Container>
     Container to() const {
         return Container{ begin_, end_ };
@@ -303,6 +326,28 @@ struct iterator_view {
     }
 
     template<
+        class SFINAE = value_type,
+        class Key = typename iterator_view_impl::keyValue<SFINAE>::key,
+        class Value = typename iterator_view_impl::keyValue<SFINAE>::value,
+        class Compare = std::less<Key>, 
+        class Allocator = std::allocator< std::pair<const Key, Value> >
+    >
+    std::map<Key, Value, Compare, Allocator> toMap() const {
+        return { begin_, end_ };
+    }
+
+    template<
+        class SFINAE = value_type,
+        class Key = typename iterator_view_impl::keyValue<SFINAE>::key,
+        class Value = typename iterator_view_impl::keyValue<SFINAE>::value,
+        class Compare = std::less<Key>, 
+        class Allocator = std::allocator< std::pair<const Key, Value> >
+    >
+    std::multimap<Key, Value, Compare, Allocator> toMultiMap() const {
+        return { begin_, end_ };
+    }
+
+    template<
         class Hash = std::hash<value_type>,
         class KeyEqual = std::equal_to<value_type>,
         class Allocator = std::allocator<value_type>
@@ -317,6 +362,30 @@ struct iterator_view {
         class Allocator = std::allocator<value_type>
     >
     std::unordered_multiset<value_type, Hash, KeyEqual, Allocator> toHashMultiSet() const {
+        return { begin_, end_ };
+    }
+
+    template<
+        class SFINAE = value_type,
+        class Key = typename iterator_view_impl::keyValue<SFINAE>::key,
+        class Value = typename iterator_view_impl::keyValue<SFINAE>::value,
+        class Hash = std::hash<Key>,
+        class KeyEqual = std::equal_to<Key>,
+        class Allocator = std::allocator< std::pair<const Key, Value> >
+    >
+    std::unordered_map<Key, Value, Hash, KeyEqual, Allocator> toHashMap() const {
+        return { begin_, end_ };
+    }
+
+    template<
+        class SFINAE = value_type,
+        class Key = typename iterator_view_impl::keyValue<SFINAE>::key,
+        class Value = typename iterator_view_impl::keyValue<SFINAE>::value,
+        class Hash = std::hash<Key>,
+        class KeyEqual = std::equal_to<Key>,
+        class Allocator = std::allocator< std::pair<const Key, Value> >
+    >
+    std::unordered_multimap<Key, Value, Hash, KeyEqual, Allocator> toHashMultiMap() const {
         return { begin_, end_ };
     }
 
@@ -358,6 +427,28 @@ struct iterator_view {
     }
 
     template<
+        class SFINAE = value_type,
+        class Key = typename iterator_view_impl::keyValue<SFINAE>::key,
+        class Value = typename iterator_view_impl::keyValue<SFINAE>::value,
+        class Compare = std::less<Key>, 
+        class Allocator = std::allocator< std::pair<const Key, Value> >
+    >
+    auto toMapView() const {
+        return toContainerView< std::map<Key, Value, Compare, Allocator> >();
+    }
+
+    template<
+        class SFINAE = value_type,
+        class Key = typename iterator_view_impl::keyValue<SFINAE>::key,
+        class Value = typename iterator_view_impl::keyValue<SFINAE>::value,
+        class Compare = std::less<Key>, 
+        class Allocator = std::allocator< std::pair<const Key, Value> >
+    >
+    auto toMultiMapView() const {
+        return toContainerView< std::multimap<Key, Value, Compare, Allocator> >();
+    }
+
+    template<
         class Hash = std::hash<value_type>,
         class KeyEqual = std::equal_to<value_type>,
         class Allocator = std::allocator<value_type>
@@ -373,6 +464,30 @@ struct iterator_view {
     >
     auto toHashMultiSetView() const {
         return toContainerView< std::unordered_multiset<value_type, Hash, KeyEqual, Allocator> >();
+    }
+
+    template<
+        class SFINAE = value_type,
+        class Key = typename iterator_view_impl::keyValue<SFINAE>::key,
+        class Value = typename iterator_view_impl::keyValue<SFINAE>::value,
+        class Hash = std::hash<Key>,
+        class KeyEqual = std::equal_to<Key>,
+        class Allocator = std::allocator< std::pair<const Key, Value> >
+    >
+    auto toHashMapView() const {
+        return toContainerView<std::unordered_map<Key, Value, Hash, KeyEqual, Allocator>>();
+    }
+
+    template<
+        class SFINAE = value_type,
+        class Key = typename iterator_view_impl::keyValue<SFINAE>::key,
+        class Value = typename iterator_view_impl::keyValue<SFINAE>::value,
+        class Hash = std::hash<Key>,
+        class KeyEqual = std::equal_to<Key>,
+        class Allocator = std::allocator< std::pair<const Key, Value> >
+    >
+    auto toHashMultiMapView() const {
+        return toContainerView<std::unordered_multimap<Key, Value, Hash, KeyEqual, Allocator>>();
     }
 
 };
