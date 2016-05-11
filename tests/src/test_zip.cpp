@@ -18,6 +18,22 @@ TEST(zip, simple) {{
 
 }}
 
+TEST(zip, reference) {{
+
+    auto&& v = std::vector<int>{1,2,3,4};
+    auto&& w = std::list<int>{3,4,5,6};
+
+    auto&& z = viewContainer(v) ^ viewContainer(w);
+
+    std::begin(z)->first = 6;
+
+    auto&& have = std::vector<std::pair<int, int>>( std::begin(z), std::end(z) );
+    auto&& expected = std::vector<std::pair<int, int>>{ {6,3}, {2,4}, {3,5}, {4,6} };
+
+    ASSERT_EQ(have, expected);
+
+}}
+
 TEST(zip, empty) {{
 
     auto&& v = std::vector<int>{};
