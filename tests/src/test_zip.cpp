@@ -31,6 +31,7 @@ TEST(zip, reference) {{
     auto&& expected = std::vector<std::pair<int, int>>{ {6,3}, {2,4}, {3,5}, {4,6} };
 
     ASSERT_EQ(have, expected);
+    ASSERT_EQ(v[0], 6);
 
 }}
 
