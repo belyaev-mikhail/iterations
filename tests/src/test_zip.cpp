@@ -72,4 +72,17 @@ TEST(zip, infinite) {{
     ASSERT_EQ(have, expected);
 }}
 
+TEST(zip, gccIssue) {{
+
+    struct nonCopyable {
+        nonCopyable(const nonCopyable&) = delete;
+        nonCopyable() {}
+    } nc;
+
+    auto&& v = std::vector<nonCopyable>(2);
+    
+    auto&& z = viewContainer(v) ^ viewContainer(v);
+
+}}
+
 } /* namespace */
