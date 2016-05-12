@@ -100,6 +100,8 @@ TEST(zip, gccIssue) {{
     
     auto&& z = viewContainer(v) ^ viewContainer(v);
 
+    auto&& y = z.toVector();
+
 }}
 
 } /* namespace */
