@@ -98,7 +98,9 @@ TEST(zip, gccIssue) {{
 
     auto&& v = std::vector<nonCopyable>(2);
     
-    auto&& z = viewContainer(v) ^ viewContainer(v);
+    auto&& view = viewContainer(v);
+
+    auto&& z = view ^ view;
 
     auto&& y = z.toVector();
 

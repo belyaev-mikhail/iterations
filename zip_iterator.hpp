@@ -8,6 +8,8 @@
 #ifndef ZIP_ITERATOR_HPP_
 #define ZIP_ITERATOR_HPP_
 
+#include <iostream>
+
 #include "iterator_adapter.hpp"
 #include "copy_assignable.hpp"
 
@@ -36,7 +38,7 @@ struct zipping_iterator_simple {
         return lhv == other.lhv || rhv == other.rhv; // this is done on purpose
     }
     size_t distance(const zipping_iterator_simple& other) const {
-        return std::min(std::distance(lhv, other.lhv), std::distance(rhv, other.rhv));
+        return std::min((size_t)std::distance(other.lhv, lhv), (size_t)std::distance(other.rhv, rhv));
     }
     int compare(const zipping_iterator_simple& other) const {
         return (lhv < other.lhv || rhv < other.rhv) ? (-1) :
