@@ -76,6 +76,51 @@ TEST(zip, secondBigger) {{
 
 }}
 
+TEST(zip, forward) {{
+
+    auto&& v = range(1, 15).filter();
+    auto&& w = range(4, 8).filter();
+
+    auto&& z = viewContainer(v) ^ viewContainer(w);
+
+    ASSERT_EQ(z.size(), 4);
+
+    std::vector<std::pair<int, int>> expected { {1,4}, {2,5}, {3,6}, {4,7} };
+
+    ASSERT_EQ(z.toVector(), expected);
+
+}}
+
+TEST(zip, bidir) {{
+
+    auto&& v = range(1, 15);
+    auto&& w = range(4, 8);
+
+    auto&& z = viewContainer(v) ^ viewContainer(w);
+
+    ASSERT_EQ(z.size(), 4);
+
+    std::vector<std::pair<int, int>> expected { {1,4}, {2,5}, {3,6}, {4,7} };
+
+    ASSERT_EQ(z.toVector(), expected);
+
+}}
+
+TEST(zip, random_access) {{
+
+    auto&& v = range(1, 15).toVectorView().map(LAM(i, (int)i));
+    auto&& w = range(4, 8).toVectorView().map(LAM(i, (int)i));
+
+    auto&& z = viewContainer(v) ^ viewContainer(w);
+
+    ASSERT_EQ(z.size(), 4);
+
+    std::vector<std::pair<int, int>> expected { {1,4}, {2,5}, {3,6}, {4,7} };
+
+    ASSERT_EQ(z.toVector(), expected);
+
+}}
+
 TEST(zip, infinite) {{
     auto&& v = std::vector<int>{ 1, 2 };
     auto&& vinf = viewContainer(v).cycle();
