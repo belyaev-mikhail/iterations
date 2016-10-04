@@ -9,23 +9,29 @@
 #define FILTER_ITERATOR_HPP_
 
 #include "copy_assignable.hpp"
+#include "compact.hpp"
 
 namespace essentials {
 namespace iterations {
 
 template<class It, class Pred>
 struct filtered_iterator_simple: simple_iterator_facade<It> {
-    It baseEnd;
-    copy_assignable_function<Pred> pred;
+    compact_pair<copy_assignable_function<Pred>, It> data_;
+
+    inline const Pred& predicate() const { return data_.first(); }
+    inline const It& baseEnd() const { return data_.second(); }
 
     filtered_iterator_simple() = default;
     filtered_iterator_simple(It it, It end, Pred pred):
-            simple_iterator_facade<It>{it}, baseEnd(end), pred(pred) {
+            simple_iterator_facade<It>{it}, data_(pred, end) {
         restore_invariant();
     }
 
-    bool has_next() const { return !(this->base == this->baseEnd); }
-    bool invariant() const { return !has_next() || pred(*this->base); }
+    bool has_next() const { return !(this->base == this->baseEnd()); }
+    bool invariant() const { 
+        auto&& pred = predicate();
+        return !has_next() || pred(*this->base); 
+    }
     void restore_invariant() {
         while(!invariant()) simple_iterator_facade<It>::next();
     }

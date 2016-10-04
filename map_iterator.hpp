@@ -15,13 +15,13 @@ namespace essentials {
 namespace iterations {
 
 template<class It, class Mapping>
-struct mapped_iterator_simple: simple_iterator_facade<It> {
-    copy_assignable_function<Mapping> mapping;
+struct mapped_iterator_simple: simple_iterator_facade<It>, copy_assignable_function<Mapping> {
+    using copy_assignable_function<Mapping>::call;
 
     mapped_iterator_simple(It it, Mapping mapping):
-        simple_iterator_facade<It>{it}, mapping(mapping) {}
+        simple_iterator_facade<It>{it}, copy_assignable_function<Mapping>(mapping) {}
 
-    auto value() const -> decltype(mapping(*this->base)) { return mapping(*this->base); }
+    auto value() const -> decltype(call(*this->base)) { return call(*this->base); }
 };
 
 template<class It, class Mapping>
