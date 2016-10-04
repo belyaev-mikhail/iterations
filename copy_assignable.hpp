@@ -8,11 +8,39 @@
 #ifndef COPY_ASSIGNABLE_FUNCTION_HPP
 #define COPY_ASSIGNABLE_FUNCTION_HPP
 
+#include <type_traits>
+
 namespace essentials {
 namespace iterations {
 
+template<class F, 
+         bool EmptyOptimizable = 
+               std::is_empty<std::remove_cv_t<F>>::value 
+            && !std::is_final<std::remove_cv_t<F>>::value>
+struct copy_assignable_function;
+
 template<class F>
-struct copy_assignable_function {
+struct copy_assignable_function<F, true>: F {
+    copy_assignable_function(F f): F(f){}
+    copy_assignable_function(const copy_assignable_function& other) = default;
+    copy_assignable_function(copy_assignable_function&& other) = default;
+
+    // Function is stateless, assigning by reconstruction has no real sense
+    copy_assignable_function& operator= (const copy_assignable_function& other) {
+        return *this;
+    }
+
+    F& get_function() { return *this; }
+    const F& get_function() const { return *this; }
+
+    template<class ...Args>
+    auto call(Args&&... args) const -> decltype(std::declval<F>()(std::forward<Args>(args)...)) {
+        return get_function()(std::forward<Args>(args)...);
+    }
+};
+
+template<class F>
+struct copy_assignable_function<F, false> {
 
     union { F f; };
 
@@ -31,15 +59,22 @@ struct copy_assignable_function {
         return *this;
     }
 
+    F& get_function() { return f; }
+    const F& get_function() const { return f; }
+
     template<class ...Args>
     auto operator()(Args&&... args) const -> decltype(std::declval<F>()(std::forward<Args>(args)...)) {
         return f(std::forward<Args>(args)...);
     }
 
-    operator F() const {
-        return f;
+    template<class ...Args>
+    auto call(Args&&... args) const -> decltype(std::declval<F>()(std::forward<Args>(args)...)) {
+        return f(std::forward<Args>(args)...);
     }
 
+    operator const F&() const {
+        return f;
+    }
 };
 
 template<class T>

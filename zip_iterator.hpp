@@ -17,17 +17,19 @@ namespace essentials {
 namespace iterations {
 
 template<class ItLhv, class ItRhv, class Zipper>
-struct zipping_iterator_simple {
+struct zipping_iterator_simple: copy_assignable_function<Zipper> {
 
     ItLhv lhv;
     ItRhv rhv;
-    copy_assignable_function<Zipper> zipper;
+
+    using copy_assignable_function<Zipper>::call;
 
     zipping_iterator_simple(ItLhv lhv, ItRhv rhv, Zipper zipper):
-        lhv(lhv), rhv(rhv), zipper(zipper) {}
+        copy_assignable_function<Zipper>(zipper),
+        lhv(lhv), rhv(rhv) {}
 
-    auto value() const -> decltype(zipper(*lhv, *rhv)) {
-        return zipper(*lhv, *rhv);
+    auto value() const -> decltype(call(*lhv, *rhv)) {
+        return call(*lhv, *rhv);
     }
 
     void next() { ++lhv; ++rhv; }
