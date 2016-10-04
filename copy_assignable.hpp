@@ -22,11 +22,11 @@ struct copy_assignable_function;
 template<class F>
 struct copy_assignable_function<F, true>: F {
     copy_assignable_function(F f): F(f){}
-    copy_assignable_function(const copy_assignable_function& other) = default;
-    copy_assignable_function(copy_assignable_function&& other) = default;
+    copy_assignable_function(const copy_assignable_function&) = default;
+    copy_assignable_function(copy_assignable_function&&) = default;
 
     // Function is stateless, assigning by reconstruction has no real sense
-    copy_assignable_function& operator= (const copy_assignable_function& other) {
+    copy_assignable_function& operator= (const copy_assignable_function&) {
         return *this;
     }
 
