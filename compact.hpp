@@ -114,7 +114,7 @@ struct compact_pair<A, A, true, true>: A {
     constexpr compact_pair() = default;
     constexpr compact_pair(const A& a, const A&): A(a) {}
     template<class C, class D>
-    constexpr compact_pair(C&& c, D&& d): A(std::forward<C>(c)) {}
+    constexpr compact_pair(C&& c, D&&): A(std::forward<C>(c)) {}
     template<class C, class D>
     constexpr compact_pair(const compact_pair<C, D>& other): A(other.first()) {}
     template<class C, class D>
