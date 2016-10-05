@@ -12,139 +12,124 @@ namespace essentials {
 namespace iterations {
 
 template<
+    size_t Ix,
     class T, 
+    bool IsTrivial =
+        std::is_trivial<std::remove_cv_t<T>>::value,
     bool IsCompactible = 
         std::is_empty<std::remove_cv_t<T>>::value
         && !std::is_final<std::remove_cv_t<T>>::value
 > struct compacter;
 
-template<class T>
-struct compacter<T, false> {
+template<size_t Ix, class T, bool Trivial>
+struct compacter<Ix, T, Trivial, false> {
     T value_;
 
-    compacter(const T& value): value_(value){}
-    compacter(T&& value): value_(std::move(value)){}
-    compacter(const compacter&) = default;
-    compacter(compacter&&) = default;
+    constexpr compacter(const T& value): value_(value){}
+    constexpr compacter(T&& value): value_(std::move(value)){}
+
+    constexpr compacter() = default;
+    constexpr compacter(const compacter&) = default;
+    constexpr compacter(compacter&&) = default;
+    constexpr compacter& operator=(const compacter&) = default;
+    constexpr compacter& operator=(compacter&&) = default;
 
     T& value() { return value_; }
     const T& value() const { return value_; }
 };
 
-template<class T>
-struct compacter<T, true>: T {
-    compacter(const T& value): T(value){}
-    compacter(T&& value): T(std::move(value)){}
-    compacter(const compacter&) = default;
-    compacter(compacter&&) = default;
+template<size_t Ix, class T>
+struct compacter<Ix, T, false, true>: T {
+    constexpr compacter(const T& value): T(value){}
+    constexpr compacter(T&& value): T(std::move(value)){}
+
+    constexpr compacter() = default;
+    constexpr compacter(const compacter&) = default;
+    constexpr compacter(compacter&&) = default;
+    constexpr compacter& operator=(const compacter&) = default;
+    constexpr compacter& operator=(compacter&&) = default;
 
     T& value() { return *this; }
     const T& value() const { return *this; }
 };
 
-template<
-    class A, 
-    class B, 
-    bool IsACompactible = 
-        std::is_empty<std::remove_cv_t<A>>::value
-        && !std::is_final<std::remove_cv_t<A>>::value,
-    bool IsBCompactible = 
-        std::is_empty<std::remove_cv_t<B>>::value
-        && !std::is_final<std::remove_cv_t<B>>::value
->    
-struct compact_pair;
+template<size_t Ix, class T>
+struct compacter<Ix, T, true, true> {
+    constexpr compacter(const T&){}
+    constexpr compacter(T&&){}
 
-template<class A, class B>
-struct compact_pair<A, B, true, false>: A {
-    B second_;
+    constexpr compacter() = default;
+    constexpr compacter(const compacter&) = default;
+    constexpr compacter(compacter&&) = default;
+    constexpr compacter& operator=(const compacter&) = default;
+    constexpr compacter& operator=(compacter&&) = default;
+    
+    T& instance() const {
+        static T instance;
+        return instance;
+    }
 
-    constexpr compact_pair() = default;
-    constexpr compact_pair(const A& a, const B& b): A(a), second_(b) {}
-    template<class C, class D>
-    constexpr compact_pair(C&& c, D&& d): A(std::forward<C>(c)), second_(std::forward<D>(d)) {}
-    template<class C, class D>
-    constexpr compact_pair(const compact_pair<C, D>& other): A(other.first()), second_(other.second()) {}
-    template<class C, class D>
-    constexpr compact_pair(compact_pair<C, D>&& other): A(std::move<C>(other.first())), second_(std::move<D>(other.second())) {}
-
-    A& first() { return *this; }
-    B& second() { return second_; }
-    const A& first() const { return *this; }
-    const B& second() const { return second_; }
+    T& value() { return instance; }
+    const T& value() const { return instance; }
 };
 
 template<class A, class B>
-struct compact_pair<A, B, false, true>: B {
-    A first_;
+struct compact_pair: compacter<0, A>, compacter<1, B> {
+    using First = compacter<0, A>;
+    using Second = compacter<1, B>;
 
     constexpr compact_pair() = default;
-    constexpr compact_pair(const A& a, const B& b): B(b), first_(a) {}
+    constexpr compact_pair(const A& c, const B& d): First(c), Second(d) {}
     template<class C, class D>
-    constexpr compact_pair(C&& c, D&& d): B(std::forward<D>(d)), first_(std::forward<C>(c)) {}
+    constexpr compact_pair(C&& c, D&& d): First(std::forward<C>(c)), Second(std::forward<D>(d)) {}
     template<class C, class D>
-    constexpr compact_pair(const compact_pair<C, D>& other): B(other.second()), first_(other.first()) {}
+    constexpr compact_pair(const compact_pair<C, D>& other): First(other.first()), Second(other.second()) {}
     template<class C, class D>
-    constexpr compact_pair(compact_pair<C, D>&& other): B(std::move<D>(other.second())), first_(std::move<C>(other.first())) {}
+    constexpr compact_pair(compact_pair<C, D>&& other): First(std::move<C>(other.first())), Second(std::move<D>(other.second())) {}
 
-    A& first() { return first_; }
-    B& second() { return *this; }
-    const A& first() const { return first_; }
-    const B& second() const { return *this; }
+    A& first() { return First::value(); }
+    B& second() { return Second::value(); }
+
+    const A& first() const { return First::value(); }
+    const B& second() const { return Second::value(); }
 };
 
-template<class A, class B>
-struct compact_pair<A, B, true, true>: A, B {
-    constexpr compact_pair() = default;
-    constexpr compact_pair(const A& a, const B& b): A(a), B(b) {}
-    template<class C, class D>
-    constexpr compact_pair(C&& c, D&& d): A(std::forward<C>(c)), B(std::forward<D>(d)) {}
-    template<class C, class D>
-    constexpr compact_pair(const compact_pair<C, D>& other): A(other.first()), B(other.second()) {}
-    template<class C, class D>
-    constexpr compact_pair(compact_pair<C, D>&& other): A(std::move<C>(other.first())), B(std::move<D>(other.second())) {}
+template<class Seq, class ...Elements>
+struct compact_tuple_impl;
 
-    A& first() { return *this; }
-    B& second() { return *this; }
-    const A& first() const { return *this; }
-    const B& second() const { return *this; }
+template<class ...Elements, size_t ...Ixs>
+struct compact_tuple_impl<std::index_sequence<Ixs...>, Elements...>
+    : compacter<Ixs, Elements>... {
+
+    template<size_t Ix>
+    using type_at = std::tuple_element_t<Ix, std::tuple<Elements...>>;
+
+    template<size_t Ix>
+    using Component = compacter<Ix, type_at<Ix>>;
+
+    constexpr compact_tuple_impl() = default;
+    constexpr compact_tuple_impl(const Elements&... elements): compacter<Ixs, Elements>(elements)... {}
+    template<class ...OtherElements>
+    constexpr compact_tuple_impl(OtherElements&&... elements): compacter<Ixs, Elements>(std::forward<Elements>(elements))... {}
+    template<class ...OtherElements>
+    constexpr compact_tuple_impl(
+        const compact_tuple_impl<std::index_sequence<Ixs...>, OtherElements...>& elements
+    ): compacter<Ixs, Elements>(elements.template get<Ixs>())... {}
+    template<class ...OtherElements>
+    constexpr compact_tuple_impl(
+        compact_tuple_impl<std::index_sequence<Ixs...>, OtherElements...>&& elements
+    ): compacter<Ixs, Elements>(std::move(elements.template get<Ixs>()))... {}
+
+    template<size_t Ix>
+    type_at<Ix>& get() { return Component<Ix>::value(); }
+
+    template<size_t Ix>
+    const type_at<Ix>& get() const { return Component<Ix>::value(); }
+
 };
 
-template<class A>
-struct compact_pair<A, A, true, true>: A {
-    constexpr compact_pair() = default;
-    constexpr compact_pair(const A& a, const A&): A(a) {}
-    template<class C, class D>
-    constexpr compact_pair(C&& c, D&&): A(std::forward<C>(c)) {}
-    template<class C, class D>
-    constexpr compact_pair(const compact_pair<C, D>& other): A(other.first()) {}
-    template<class C, class D>
-    constexpr compact_pair(compact_pair<C, D>&& other): A(std::move<C>(other.first())) {}
-
-    A& first() { return *this; }
-    A& second() { return *this; }
-    const A& first() const { return *this; }
-    const A& second() const { return *this; }
-};
-
-template<class A, class B>
-struct compact_pair<A, B, false, false> {
-    A first_;
-    B second_;
-
-    constexpr compact_pair() = default;
-    constexpr compact_pair(const A& a, const B& b): first_(a), second_(b) {}
-    template<class C, class D>
-    constexpr compact_pair(C&& c, D&& d): first_(std::forward<C>(c)), second_(std::forward<D>(d)) {}
-    template<class C, class D>
-    constexpr compact_pair(const compact_pair<C, D>& other): first_(other.first()), second_(other.second()) {}
-    template<class C, class D>
-    constexpr compact_pair(compact_pair<C, D>&& other): first_(std::move<C>(other.first())), second_(std::move<D>(other.second())) {}
-
-    A& first() { return first_; }
-    B& second() { return second_; }
-    const A& first() const { return first_; }
-    const B& second() const { return second_; }
-};
+template<class ...Elements>
+using compact_tuple = compact_tuple_impl<std::index_sequence_for<Elements...>, Elements...>;
 
 } /* namespace iterations */
 } /* namespace essentials */
