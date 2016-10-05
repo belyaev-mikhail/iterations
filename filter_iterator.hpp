@@ -16,10 +16,10 @@ namespace iterations {
 
 template<class It, class Pred>
 struct filtered_iterator_simple: simple_iterator_facade<It> {
-    compact_pair<copy_assignable_function<Pred>, It> data_;
+    compact_tuple<copy_assignable_function<Pred>, It> data_;
 
-    inline const Pred& predicate() const { return data_.first(); }
-    inline const It& baseEnd() const { return data_.second(); }
+    inline const Pred& predicate() const { return data_.template get<0>(); }
+    inline const It& baseEnd() const { return data_.template get<1>(); }
 
     filtered_iterator_simple() = default;
     filtered_iterator_simple(It it, It end, Pred pred):
