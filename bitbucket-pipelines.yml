@@ -11,6 +11,7 @@ pipelines:
         script: # Modify the commands below to build your repository.
           - pacman --noconfirm -S base-devel
           - pacman --noconfirm -S clang
+          - pacman --noconfirm -S gtest
           - pacman --noconfirm -S cmake
           - cd tests
           - cmake .
