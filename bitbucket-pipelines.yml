@@ -9,7 +9,7 @@ pipelines:
   default:
     - step:
         script: # Modify the commands below to build your repository.
-          - yaourt -S cmake
+          - pacman -S cmake
           - cd tests
           - cmake .
           - make
