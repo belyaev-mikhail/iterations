@@ -13,7 +13,4 @@ pipelines:
           - pacman --noconfirm -S clang
           - pacman --noconfirm -S gtest
           - pacman --noconfirm -S cmake
-          - cd tests
-          - cmake .
-          - make
-          - ./iteration_tests
+          - ./run_tests.sh
