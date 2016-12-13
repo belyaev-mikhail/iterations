@@ -3,13 +3,12 @@
 # Only use spaces to indent your .yml configuration.
 # -----
 # You can specify a custom docker image from Docker Hub as your build environment.
-image: rafaelsoares/archlinux:latest
+image: kopppcappp/archlinux-yaourt:latest
 
 pipelines:
   default:
     - step:
         script: # Modify the commands below to build your repository.
-          - pacman --noconfirm -S base-devel
           - pacman --noconfirm -S clang
           - pacman --noconfirm -S gtest
           - pacman --noconfirm -S cmake
