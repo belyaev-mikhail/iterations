@@ -13,3 +13,4 @@ pipelines:
           - pacman --noconfirm -S gtest
           - pacman --noconfirm -S cmake
           - ./run_tests.sh
+          - CXX=clang++ ./run_tests.sh
