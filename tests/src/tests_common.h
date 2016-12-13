@@ -32,7 +32,7 @@ struct is_assignable<T&> {
     static const constexpr auto value = true;
 };
 
-#define IS_ASSIGNABLE(...) is_assignable<decltype(__VA_ARGS__)>::value
+#define IS_ASSIGNABLE(...) bool(is_assignable<decltype(__VA_ARGS__)>::value)
 
 #define TRACE std::cerr << PRETTY_FUNCTION << ":" << __LINE__ << std::endl
 
