@@ -4,6 +4,7 @@ pipelines:
   default:
     - step:
         script:
+          - pacman -Syy
           - pacman --noconfirm -S clang
           - pacman --noconfirm -S gtest
           - pacman --noconfirm -S cmake
