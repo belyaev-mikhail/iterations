@@ -268,8 +268,61 @@ struct iterator_view {
     }
 
     template<class OtherView>
-    void assign(OtherView&& other) {
-        std::copy(overloaded_begin(other), overloaded_end(other), begin_);
+    void copyFrom(OtherView&& other) {
+        auto sb = overloaded_begin(other);
+        auto se = overloaded_end(other);
+        auto db = begin();
+        auto de = end();
+        for(; sb != se && db != de; ++sb, ++db) {
+            *db = *sb;
+        }
+    }
+
+    template<class OtherView>
+    void moveFrom(OtherView&& other) {
+        auto sb = overloaded_begin(other);
+        auto se = overloaded_end(other);
+        auto db = begin();
+        auto de = end();
+        for(; sb != se && db != de; ++sb, ++db) {
+            *db = std::move(*sb);
+        }
+    }
+
+    template<class OtherView>
+    void copyTo(OtherView&& other) {
+        auto db = overloaded_begin(other);
+        auto de = overloaded_end(other);
+        auto sb = begin();
+        auto se = end();
+        for(; sb != se && db != de; ++sb, ++db) {
+            *db = *sb;
+        }
+    }
+
+    template<class OtherView>
+    void moveTo(OtherView&& other) {
+        auto db = overloaded_begin(other);
+        auto de = overloaded_end(other);
+        auto sb = begin();
+        auto se = end();
+        for(; sb != se && db != de; ++sb, ++db) {
+            *db = std::move(*sb);
+        }
+    }
+
+    template<class OtherView, class Equals = std::equal_to<value_type>>
+    bool equals(OtherView&& other) {
+        auto rb = overloaded_begin(other);
+        auto re = overloaded_end(other);
+        auto lb = begin();
+        auto le = end();
+        Equals eq;
+
+        for(; rb != re && lb != le; ++rb, ++lb) {
+            if(not eq(*lb, *rb)) return false;
+        }
+        return true;
     }
 
     iterator_view<abstracting_iterator<It>> abstract() const {

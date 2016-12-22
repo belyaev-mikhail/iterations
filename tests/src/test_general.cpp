@@ -65,11 +65,22 @@ TEST(general, reverse) {{
 }}
 
 
-TEST(general, assign) {{
+TEST(general, copyFrom) {{
     std::vector<int> v0 {1,2,3,4,5,6,7};
     
     auto view0 = viewContainer(v0).filter(LAM(i, i%2 == 0));
-    view0.assign(range(42, 45));
+    view0.copyFrom(range(42, 45));
+
+    std::vector<int> expected { 1, 42, 3, 43, 5, 44, 7 };
+
+    ASSERT_EQ(v0, expected);
+}}
+
+TEST(general, copyTo) {{
+    std::vector<int> v0 {1,2,3,4,5,6,7};
+
+    auto view0 = viewContainer(v0).filter(LAM(i, i%2 == 0));
+    range(42, 45).copyTo(view0);
 
     std::vector<int> expected { 1, 42, 3, 43, 5, 44, 7 };
 
