@@ -11,6 +11,25 @@
 namespace essentials {
 namespace iterations {
 
+namespace compact_impl {
+
+template<class Needle, class ...Haystack> struct type_index_of;
+template<class Needle, class ...Rest>
+struct type_index_of<Needle, Needle, Rest...> {
+    enum{ value = 0 };
+};
+template<class Needle, class First, class ...Rest>
+struct type_index_of<Needle, First, Rest...> {
+    enum{ value = type_index_of<Needle, Rest...>::value + 1 };
+};
+template<class Needle>
+struct type_index_of<Needle> {
+    static_assert(sizeof(Needle) > 0, "Type pack does not contain the required type");
+    enum{ value = 0 };
+};
+
+} /* namespace compact_impl */
+
 template<
     size_t Ix,
     class T, 
@@ -126,6 +145,16 @@ struct compact_tuple_impl<std::index_sequence<Ixs...>, Elements...>
     template<size_t Ix>
     const type_at<Ix>& get() const { return Component<Ix>::value(); }
 
+    template<class T>
+    T& get() {
+        enum{ index = compact_impl::type_index_of<T, Elements...>::value };
+        return get<index>();
+    }
+    template<class T>
+    const T& get() const {
+        enum{ index = compact_impl::type_index_of<T, Elements...>::value };
+        return get<index>();
+    }
 };
 
 template<class ...Elements>
