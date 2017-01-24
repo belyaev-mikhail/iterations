@@ -8,5 +8,5 @@ pipelines:
           - pacman --noconfirm -S clang
           - pacman --noconfirm -S gtest
           - pacman --noconfirm -S cmake
-          - ./run_tests.sh
+          - CXX=g++ ./run_tests.sh
           - CXX=clang++ ./run_tests.sh
