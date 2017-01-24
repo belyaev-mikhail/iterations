@@ -18,8 +18,8 @@ template<class It, class Pred>
 struct filtered_iterator_simple: simple_iterator_facade<It> {
     compact_tuple<copy_assignable_function<Pred>, It> data_;
 
-    inline const Pred& predicate() const { return data_.template get<0>(); }
-    inline const It& baseEnd() const { return data_.template get<1>(); }
+    inline const Pred& predicate() const { return data_.template get<copy_assignable_function<Pred>>(); }
+    inline const It& baseEnd() const { return data_.template get<It>(); }
 
     filtered_iterator_simple() = default;
     filtered_iterator_simple(It it, It end, Pred pred):

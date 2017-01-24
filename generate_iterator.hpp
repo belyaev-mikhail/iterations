@@ -16,26 +16,34 @@ namespace iterations {
 
 template<class ValueType, class Generator, class Producer>
 struct generating_iterator_simple {
-    copy_assignable_function<Generator> generator_;
-    copy_assignable_function<Producer> producer_;
-    std::shared_ptr<ValueType> current_;
+    using GeneratorStorage = copy_assignable_function<Generator>;
+    using ProducerStorage = copy_assignable_function<Producer>;
+    using CurrentStorage = std::shared_ptr<ValueType>;
+
+    compact_tuple<GeneratorStorage, ProducerStorage, CurrentStorage> data_;
     size_t generation_;
 
     template<class Seed>
     generating_iterator_simple(Seed&& startingValue, Generator generator, Producer producer):
-        generator_(generator), producer_(producer), current_(std::make_shared<ValueType>(std::forward<Seed>(startingValue))), generation_(0) {};
+        data_(generator, producer, std::make_shared<ValueType>(std::forward<Seed>(startingValue))), generation_(0) {};
 
     struct limiting_iterator{};
 
     generating_iterator_simple(limiting_iterator, size_t lastGeneration, Generator generator, Producer producer):
-        generator_(generator), producer_(producer), current_(nullptr), generation_(lastGeneration) {};
+        data_(generator, producer, nullptr), generation_(lastGeneration) {};
 
     void next() {
-        current_ = std::make_shared<ValueType>(generator_(*current_));
+        auto&& generator = data_.template get<GeneratorStorage>();
+        auto&& current = data_.template get<CurrentStorage>();
+        current = std::make_shared<ValueType>(generator(*current));
         ++generation_;
     }
 
-    auto value() const -> decltype(auto) { return producer_(*current_); }
+    auto value() const -> decltype(auto) {
+        auto&& producer = data_.template get<ProducerStorage>();
+        auto&& current = data_.template get<CurrentStorage>();
+        return producer(*current);
+    }
 
     bool equals(const generating_iterator_simple& other) const {
         return generation_ == other.generation_;
