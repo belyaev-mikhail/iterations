@@ -1,3 +1,5 @@
 #! /bin/bash
 
-(cd tests && cmake . && make && ./iterations_tests)
+rm -rf tests/build/
+mkdir tests/build
+(cd tests/build && cmake .. && make && ./iterations_tests)
